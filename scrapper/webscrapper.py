@@ -8,14 +8,13 @@ from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
 from webdriver_manager.chrome import ChromeDriverManager
 
-def main():
-    # driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
+def get_data_from_link(file_name: str):
     driver = webdriver.Chrome()
     wait = WebDriverWait(driver, 10)
     
     result = []
     
-    with open('links.csv', mode='r') as csv_file:
+    with open(file_name, mode='r') as csv_file:
         csv_reader = csv.DictReader(csv_file, delimiter=',', skipinitialspace=True)
         for row in csv_reader:
             driver.get(row['url'])
@@ -191,9 +190,15 @@ def main():
                 
                 result.append(rowParsed)
                 
-    driver.quit()
     
-    with open('dataset.csv', mode='w', encoding='utf-8') as dataset_file:
+    driver.quit()
+            
+    return result
+
+def main():
+    result = get_data_from_link('links.csv')
+                
+    with open('../data_filter/raw_dataset.csv', mode='w', encoding='utf-8') as dataset_file:
         dataset_writer = csv.DictWriter(dataset_file, fieldnames=result[0].keys(), delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL, lineterminator = '\n')
         
         dataset_writer.writeheader()
