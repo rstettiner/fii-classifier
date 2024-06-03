@@ -155,6 +155,23 @@ def main():
                                             passivo_total_std = ('passivo_total', 'std')
                                            )
     
-    grp.to_csv('../dataset.csv', index=True)
+    correlacao_dados = grp.corr()
+    
+    limite_de_correlacao = 0.6
+    
+    # Encontrar pares de colunas altamente correlacionadas
+    pares_correlacionados = (correlacao_dados.abs() > limite_de_correlacao) & (correlacao_dados.abs() < 1.0)
+
+    # Encontrar colunas a serem removidas
+    colunas_a_remover = [coluna for coluna in pares_correlacionados.columns if any(pares_correlacionados[coluna])]
+
+    # Remover as colunas
+    agrupado_sem_colinearidade = grp.drop(columns=colunas_a_remover)
+    
+    correlacao_dados = agrupado_sem_colinearidade.corr()
+    
+    correlacao_dados.to_csv('../colineriade.csv')
+    
+    agrupado_sem_colinearidade.to_csv('../dataset.csv', index=True)
             
 if __name__ == "__main__": main()

@@ -24,9 +24,11 @@ def main():
     valued_group_covariance_array = valued_group_covariance.to_numpy()
     nonvalued_group_covariance_array = nonvalued_group_covariance.to_numpy()
     
-    determinante = np.linalg.det((valued_group_percentage * valued_group_covariance_array) + (nonvalued_group_percentage * nonvalued_group_covariance_array))
+    determinante_valued = np.linalg.det(valued_group_covariance_array)
+    determinante_nonvalued = np.linalg.det(nonvalued_group_covariance_array)
     
-    print(determinante)
+    print(determinante_valued)
+    print(determinante_nonvalued)
     print((valued_group_percentage * valued_group_covariance_array) + (nonvalued_group_percentage * nonvalued_group_covariance_array))
     
     # determinante_fisher = (valued_group_mean_array - nonvalued_group_mean_array) * (np.linalg.inv((valued_group_percentage * valued_group_covariance_array) + (nonvalued_group_percentage * nonvalued_group_covariance_array)))
@@ -36,6 +38,6 @@ def main():
     # print(fronteira_fisher)
     
     # fudeu, determinante eh zero porque as linhas das matrizes tem dependencia linear entre elas, preciso rever o uso das colunas!!!
-    
+    # ao tentar remover as colunas com correlacao muito alta, o determinante nao mudou tambem
             
 if __name__ == "__main__": main()
