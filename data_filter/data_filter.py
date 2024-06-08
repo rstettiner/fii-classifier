@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 
 def main():
     df = pd.read_csv("raw_dataset.csv")
@@ -157,21 +158,43 @@ def main():
     
     correlacao_dados = grp.corr()
     
-    limite_de_correlacao = 0.6
-    
-    # Encontrar pares de colunas altamente correlacionadas
-    pares_correlacionados = (correlacao_dados.abs() > limite_de_correlacao) & (correlacao_dados.abs() < 1.0)
-
-    # Encontrar colunas a serem removidas
-    colunas_a_remover = [coluna for coluna in pares_correlacionados.columns if any(pares_correlacionados[coluna])]
+    correlacao_dados = correlacao_dados.dropna(how="all")
 
     # Remover as colunas
-    agrupado_sem_colinearidade = grp.drop(columns=colunas_a_remover)
-    
-    correlacao_dados = agrupado_sem_colinearidade.corr()
+    agrupado_sem_colinearidade = grp.drop(columns=[coluna for coluna in grp.columns if coluna not in correlacao_dados.columns])
     
     correlacao_dados.to_csv('../colineriade.csv')
     
+    agrupado_sem_colinearidade.dropna()
+    
     agrupado_sem_colinearidade.to_csv('../dataset.csv', index=True)
+    
+    agrupado_sem_colinearidade = agrupado_sem_colinearidade.drop('worth_it', axis=1)
+    
+    cov = agrupado_sem_colinearidade.corr()
+    
+    cov = cov.dropna(axis=0, how="all").dropna(axis=1, how="all")
+    
+    U, s, Vt = np.linalg.svd(cov, full_matrices=False)
+
+    # Passo 2: Determinar a tolerância para considerar uma singularidade zero
+    tol = 1e-10
+
+    # Passo 3: Encontrar colunas linearmente dependentes
+    rank = np.sum(s > tol)
+    independent_columns = Vt[:rank].T
+
+    # Passo 4: Remover colunas dependentes
+    cov = cov.iloc[:, :rank]
+    
+    agrupado_sem_colinearidade = agrupado_sem_colinearidade.drop(columns=[coluna for coluna in agrupado_sem_colinearidade.columns if coluna not in cov.columns])
+    
+    cov = agrupado_sem_colinearidade.corr()
+    
+    covariancia_dados_array = cov.to_numpy()
+    determinante_covariancia = np.linalg.det(covariancia_dados_array)
+    
+    print(determinante_covariancia)
+    
             
 if __name__ == "__main__": main()
